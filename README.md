@@ -1,0 +1,1 @@
+# property-near-the-beach-predictor
