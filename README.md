@@ -4,6 +4,11 @@
 
 Beach Data Source: https://www.kaggle.com/datasets/irvingvasquez/publicsargazods
 
+<i>I used all the images from this dataset</i>
+
+Non-Beach Data Source: https://www.kaggle.com/datasets/mikhailma/house-rooms-streets-image-dataset
+
+<i>I only used the house images from this dataset</i>
 
 
 ## Table of Contents
