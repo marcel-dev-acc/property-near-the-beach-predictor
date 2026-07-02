@@ -6,3 +6,14 @@ pyarrow>=12.0
 joblib>=1.3
 jupyter>=1.0
 notebook>=7.0
+
+# Serving / deployment
+streamlit>=1.30        # web app UI (app.py)
+Pillow>=10.0           # image loading and resizing
+
+# Rightmove scraper (06_predict + app URL mode)
+beautifulsoup4>=4.12   # HTML parsing for scraper
+requests>=2.31         # HTTP for scraper
+
+# EDA plots
+seaborn>=0.13

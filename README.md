@@ -101,3 +101,99 @@ models/beach_predictor.joblib
 
 [MY EXPERIENCES]
 
+
+## Deployment
+
+The trained model (`models/beach_predictor.joblib`) is served through a
+[Streamlit](https://streamlit.io/) web app and deployed to
+[Render](https://render.com/) using a Docker image. Render builds the
+`Dockerfile` in the repository root, runs the container, and exposes it on a
+public HTTPS URL.
+
+### 1. Dockerfile
+
+Create a `Dockerfile` in the project root:
+
+```dockerfile
+FROM python:3.11-slim
+
+# Prevent Python from writing .pyc files and buffering stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install dependencies first to leverage Docker layer caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the application code and the trained model
+COPY . .
+
+# Render sets the PORT env var; Streamlit must bind to it on 0.0.0.0
+ENV PORT=8501
+EXPOSE 8501
+
+# Use shell form so $PORT is expanded at runtime
+CMD streamlit run app.py \
+    --server.port=$PORT \
+    --server.address=0.0.0.0 \
+    --server.headless=true
+```
+
+> **Note:** Add `streamlit>=1.30` to `requirements.txt` so it is installed
+> inside the image. Ensure `models/beach_predictor.joblib` is committed (or
+> generated during the build) since `models/*` is currently git-ignored — Render
+> only has access to what is in the repository.
+
+### 2. `.dockerignore`
+
+Keep the image small and the build fast by excluding data and virtual
+environments:
+
+```
+.venv/
+venv/
+env/
+.git/
+.ipynb_checkpoints/
+data/raw/
+data/interim/
+data/processed/
+__pycache__/
+*.pyc
+```
+
+### 3. Deploy on Render
+
+1. Push the repository (including the `Dockerfile`, `app.py`, and the trained
+   `.joblib` model) to GitHub.
+2. Sign in to the [Render Dashboard](https://dashboard.render.com/) and click
+   **New → Web Service**.
+3. Connect your GitHub account and select this repository.
+4. Configure the service:
+   - **Language / Runtime:** `Docker` (Render auto-detects the `Dockerfile`).
+   - **Region:** choose the one closest to your users.
+   - **Branch:** `main`.
+   - **Instance Type:** the **Free** plan is sufficient for a demo (note: free
+     services spin down after inactivity and cold-start on the next request).
+5. Render automatically injects a `PORT` environment variable — the Dockerfile
+   already binds Streamlit to it, so no extra configuration is required. Add any
+   additional environment variables under **Environment** if your app needs
+   them.
+6. Click **Create Web Service**. Render will build the Docker image, start the
+   container, and publish the app at
+   `https://<your-service-name>.onrender.com`.
+7. Every push to the configured branch triggers an automatic rebuild and
+   redeploy. You can also trigger a manual deploy from the dashboard.
+
+### 4. Local test (optional)
+
+Verify the container works before deploying:
+
+```bash
+docker build -t beach-predictor .
+docker run -p 8501:8501 -e PORT=8501 beach-predictor
+# open http://localhost:8501
+```
+

@@ -117,7 +117,7 @@ Feature extraction strategy (pure `Pillow` + `NumPy` + `scikit-learn`, no deep l
 
 Steps:
 1. Load manifest from `data/interim/image_manifest.parquet`
-2. For each image: open with `Pillow`, resize to **128 × 128**, extract features
+2. For each image: open with `Pillow`, resize to **`IMAGE_SIZE`** (the derived median dimension, **224 × 224**), extract features
 3. Assemble into a DataFrame; add `label` column
 4. Handle corrupt/unreadable files gracefully (log and skip)
 5. Save → `data/interim/features.parquet`
@@ -175,7 +175,7 @@ Scraping strategy:
 3. Extract image URLs from Rightmove's embedded JSON (present in a `<script>` tag as `propertyData`) using `json` + `re`
 4. Fall back to scraping `<img>` tags with `data-src` attributes if JSON extraction fails
 5. Download each image into memory (`io.BytesIO`) — no disk writes required
-6. Run each image through the **same feature extraction pipeline** as training (resize 128×128, extract 113 features)
+6. Run each image through the **same feature extraction pipeline** as training (resize 224×224, extract 113 features)
 7. Load the saved `beach_predictor.joblib` pipeline and predict per image
 8. Display a grid of images with predicted labels overlaid
 
@@ -203,36 +203,27 @@ seaborn>=0.13          # EDA plots
 
 ---
 
-## src/config.py
+## Paths & constants
 
-Create a shared configuration module at `src/config.py`:
+Each notebook / module is self-contained: it derives its own paths from the
+`data/` directory and defines any constants it needs inline. There is **no**
+shared config module.
+
+Common conventions used across the notebooks:
 
 ```python
+import os
 from pathlib import Path
 
-ROOT         = Path(__file__).resolve().parents[1]
-RAW_DIR      = ROOT / "data" / "raw"
-BEACH_DIR    = RAW_DIR / "beach"
-NOT_BEACH_DIR = RAW_DIR / "not_beach"
-INTERIM_DIR  = ROOT / "data" / "interim"
-PROCESSED_DIR = ROOT / "data" / "processed"
-MODELS_DIR   = ROOT / "models"
+path      = os.path.abspath(os.path.join(os.getcwd(), "..", "data"))
+DATA_DIR  = Path(path)                       # data/
+# subdirs: DATA_DIR / "raw" | "interim" | "processed", and DATA_DIR.parent / "models"
 
-MANIFEST_FILE = INTERIM_DIR / "image_manifest.parquet"
-FEATURES_FILE = INTERIM_DIR / "features.parquet"
-TRAIN_FILE    = PROCESSED_DIR / "train.parquet"
-TEST_FILE     = PROCESSED_DIR / "test.parquet"
-MODEL_FILE    = MODELS_DIR / "beach_predictor.joblib"
-
-IMAGE_SIZE    = (128, 128)   # resize target for all images
+IMAGE_SIZE    = (224, 224)   # derived median dimension (see 02_transform.ipynb)
 HIST_BINS     = 32           # bins per channel in colour histogram
 TEST_SIZE     = 0.20
 RANDOM_STATE  = 42
 TARGET_COLUMN = "label"
-
-def ensure_dirs():
-    for d in [INTERIM_DIR, PROCESSED_DIR, MODELS_DIR]:
-        d.mkdir(parents=True, exist_ok=True)
 ```
 
 ---
@@ -262,7 +253,7 @@ property-near-the-beach-predictor/
 │   └── 06_predict.ipynb     ← new: Rightmove scraper + classifier
 ├── src/
 │   ├── __init__.py
-│   └── config.py
+│   └── scraper.py
 ├── requirements.txt
 ├── README.md
 └── PLAN.md
