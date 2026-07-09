@@ -138,6 +138,34 @@ public HTTPS URL.
 7. Every push to the configured branch triggers an automatic rebuild and
    redeploy. You can also trigger a manual deploy from the dashboard.
 
+#### Render setup screens
+
+![Render new web service menu](documentation/render_deployment_01.png)
+This screen shows the Render dashboard menu where you start the deployment by
+clicking **New** and selecting **Web Service**.
+
+![Render repository selection](documentation/render_deployment_02.png)
+This screen shows the repository picker after connecting GitHub. Select the
+`property-near-the-beach-predictor` repository so Render can build directly from
+the project source.
+
+![Render runtime, branch, and region configuration](documentation/render_deployment_04.png)
+This screen shows the main service settings. Set **Language** to `Docker`,
+confirm the deploy **Branch** is `main`, choose the preferred **Region**, and
+leave **Root Directory** empty because the `Dockerfile` is in the repository
+root.
+
+![Render free instance type](documentation/render_deployment_03.png)
+This screen shows the **Instance Type** selection. The **Free** plan works for
+demo usage, but it will spin down after inactivity and take a little longer to
+start on the next request.
+
+![Render environment variables and deploy button](documentation/render_deployment_05.png)
+This screen shows the **Environment Variables** section and the final
+**Deploy Web Service** button. No manual `PORT` variable is required for this
+app, but you can add any other secrets or configuration values here before
+launching the service.
+
 ### Local test
 
 Verify the container works before deploying:
@@ -147,4 +175,3 @@ docker build -t beach-predictor .
 docker run -p 8501:8501 -e PORT=8501 beach-predictor
 # open http://localhost:8501
 ```
-
