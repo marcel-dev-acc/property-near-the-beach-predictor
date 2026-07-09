@@ -2,27 +2,19 @@
 
 [INTRODUCTION HERE]
 
-Beach Data Source: https://www.kaggle.com/datasets/irvingvasquez/publicsargazods
-
-<i>I used all the images from this dataset</i>
-
-Non-Beach Data Source: https://www.kaggle.com/datasets/mikhailma/house-rooms-streets-image-dataset
-
-<i>I only used the house images from this dataset</i>
-
-
 ## Table of Contents
+
 1. Description of the key principles of statistics, probability, and data analysis
 2. Business Case Description & Outline (Hypothesis definition / testing)
 3. Justify the selection of research methodologies
-4. Implementation
+4. Data & Implementation
 5. Features
 6. Model
 7. Assessment of the effectiveness of the model
 8. Tooling
 9. Learning process and how the project has prepared me for adaptation in the field
 10. Project Management
-
+11. Deployment
 
 ## 1. Description of the key principles of statistics, probability, and data analysis
 
@@ -78,6 +70,15 @@ models/beach_predictor.joblib
 [JUSTIFICATIONS]
 
 
+## 4. Data & Implementation
+
+Beach Data Source: https://www.kaggle.com/datasets/irvingvasquez/publicsargazods
+
+<i>I used all the images from this dataset</i>
+
+Non-Beach Data Source: https://www.kaggle.com/datasets/mikhailma/house-rooms-streets-image-dataset
+
+<i>I used all the images from this dataset</i>
 
 ## 7. Assessment of the effectiveness of the model
 
@@ -102,7 +103,11 @@ models/beach_predictor.joblib
 [MY EXPERIENCES]
 
 
-## Deployment
+## 10. Project Management
+
+[USING GITHUB PROJECTS FOR MANAGEMENT]
+
+## 11. Deployment
 
 The trained model (`models/beach_predictor.joblib`) is served through a
 [Streamlit](https://streamlit.io/) web app and deployed to
@@ -110,61 +115,7 @@ The trained model (`models/beach_predictor.joblib`) is served through a
 `Dockerfile` in the repository root, runs the container, and exposes it on a
 public HTTPS URL.
 
-### 1. Dockerfile
-
-Create a `Dockerfile` in the project root:
-
-```dockerfile
-FROM python:3.11-slim
-
-# Prevent Python from writing .pyc files and buffering stdout/stderr
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-WORKDIR /app
-
-# Install dependencies first to leverage Docker layer caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the application code and the trained model
-COPY . .
-
-# Render sets the PORT env var; Streamlit must bind to it on 0.0.0.0
-ENV PORT=8501
-EXPOSE 8501
-
-# Use shell form so $PORT is expanded at runtime
-CMD streamlit run app.py \
-    --server.port=$PORT \
-    --server.address=0.0.0.0 \
-    --server.headless=true
-```
-
-> **Note:** Add `streamlit>=1.30` to `requirements.txt` so it is installed
-> inside the image. Ensure `models/beach_predictor.joblib` is committed (or
-> generated during the build) since `models/*` is currently git-ignored — Render
-> only has access to what is in the repository.
-
-### 2. `.dockerignore`
-
-Keep the image small and the build fast by excluding data and virtual
-environments:
-
-```
-.venv/
-venv/
-env/
-.git/
-.ipynb_checkpoints/
-data/raw/
-data/interim/
-data/processed/
-__pycache__/
-*.pyc
-```
-
-### 3. Deploy on Render
+### Deploy on Render
 
 1. Push the repository (including the `Dockerfile`, `app.py`, and the trained
    `.joblib` model) to GitHub.
@@ -187,7 +138,7 @@ __pycache__/
 7. Every push to the configured branch triggers an automatic rebuild and
    redeploy. You can also trigger a manual deploy from the dashboard.
 
-### 4. Local test (optional)
+### Local test
 
 Verify the container works before deploying:
 

@@ -13,7 +13,7 @@ data/processed/*
 !data/**/.gitkeep
 
 # Models
-models/*
+# models/*
 !models/.gitkeep
 
 # OS / editor
